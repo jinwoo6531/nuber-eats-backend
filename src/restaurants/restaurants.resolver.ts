@@ -1,10 +1,23 @@
-import { Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { CreateRestaurantDto } from './dtos/create-restaurant.dto';
+import { Restaurant } from './entities/restaurant.entity';
+import { RestaurantService } from './restaurants.service';
 
-@Resolver()
+@Resolver(of => Restaurant)
 export class RestaurantResolver {
-  @Query((returns) => Boolean) //이부분은 Graphql을 위한 타입스크립트
-  isPizzaGood(): Boolean {
-    //이부분은 타입스크립트를 위한 타입
-    return true;
+  constructor(private readonly restaurantService: RestaurantService) { }
+
+  @Query(returns => [Restaurant])
+  restaurants(): Promise<Restaurant[]> {
+    return this.restaurantService.getAll();
+  }
+  @Mutation(returns => Boolean)
+  async createRestaurant(@Args('input') createRestaurantDto: CreateRestaurantDto): Promise<boolean> {
+    try {
+      await this.restaurantService.createRestaurant(createRestaurantDto);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }
